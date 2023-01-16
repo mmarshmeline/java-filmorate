@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -12,8 +13,10 @@ import java.time.LocalDate;
 
 @SpringBootTest
 class FilmorateValidatorTests {
-    private final UserService userService = new UserService();
-    private final FilmService filmService = new FilmService();
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private FilmService filmService;
 
     @Test
     void validateFilmMustThrowExceptionWhenNameIsNull() { //проверка условия 1 - пустое название фильма
@@ -145,7 +148,7 @@ class FilmorateValidatorTests {
     @Test
     void validateUserShouldReplaceNameForLoginWhenNameIsNull() { //проверка условия 5 - если имя пустое, вместо него устанавливается логин
         User user = userService.create(User.builder()
-                .id(1)
+                .id(20)
                 .email("bednyi@deneg.net")
                 .login("thunder08")
                 .name("")

@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotExistException;
+import ru.yandex.practicum.filmorate.exceptions.EntityAlreadyExistException;
+import ru.yandex.practicum.filmorate.exceptions.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validation.FilmorateValidator;
 
@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 @Slf4j
 public class UserService {
-    private HashMap<Integer, User> users = new HashMap<>();
+    private final HashMap<Integer, User> users = new HashMap<>();
     private int generatorUserId;
 
     public User create (User user) {
@@ -22,7 +22,7 @@ public class UserService {
         if (users.containsKey(user.getId())) {
             String warnMessage = "Этот пользователь уже был добавлен ранее.";
             log.warn(warnMessage);
-            throw new UserAlreadyExistException(warnMessage);
+            throw new EntityAlreadyExistException(warnMessage);
         }
 
         user.setId(++generatorUserId);
@@ -36,7 +36,7 @@ public class UserService {
         if (!users.containsKey(user.getId())) {
             String warnMessage = "Такого пользователя нет в приложении.";
             log.warn(warnMessage);
-            throw new UserNotExistException(warnMessage);
+            throw new EntityNotExistException(warnMessage);
         }
         users.put(user.getId(), user);
         return true;
