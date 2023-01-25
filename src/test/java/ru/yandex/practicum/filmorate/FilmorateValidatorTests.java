@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -21,7 +22,7 @@ class FilmorateValidatorTests {
     @Test
     void validateFilmMustThrowExceptionWhenNameIsNull() { //проверка условия 1 - пустое название фильма
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () ->
-                filmService.create(Film.builder()
+                filmService.getInMemoryFilmStorage().create(Film.builder()
                         .id(1)
                         .name("")
                         .description("В тюрьме для смертников появляется заключенный с божественным даром. " +
@@ -35,7 +36,7 @@ class FilmorateValidatorTests {
     @Test
     void validateFilmMustThrowExceptionWhenDescriptionLengthIsTooLarge() { //проверка условия 2 - слишком длинное описание
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () ->
-                filmService.create(Film.builder()
+                filmService.getInMemoryFilmStorage().create(Film.builder()
                         .id(1)
                         .name("Властелин колец: возвращение короля")
                         .description("Повелитель сил тьмы Саурон направляет свою бесчисленную армию под стены " +
@@ -51,7 +52,7 @@ class FilmorateValidatorTests {
     @Test
     void validateFilmMustThrowExceptionWhenReleaseDateIsTooEarly() { //проверка условия 3 - дата релиза раньше установленной в программе
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () ->
-                filmService.create(Film.builder()
+                filmService.getInMemoryFilmStorage().create(Film.builder()
                         .id(1)
                         .name("Сцены в саду Раундхэй")
                         .description("Самый первый фильм в мире")
@@ -64,7 +65,7 @@ class FilmorateValidatorTests {
     @Test
     void validateFilmMustThrowExceptionWhenDurationIsNegative() { //проверка условия 4 - отрицательная продолжительность фильма
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () ->
-                filmService.create(Film.builder()
+                filmService.getInMemoryFilmStorage().create(Film.builder()
                         .id(1)
                         .name("Форрест Гамп")
                         .description("Полувековая история США глазами чудака из Алабамы. " +
@@ -84,7 +85,7 @@ class FilmorateValidatorTests {
                 .releaseDate(LocalDate.of(2022, 10, 3))
                 .duration(211)
                 .build();
-        Assertions.assertEquals(expectedFilm, filmService.create(Film.builder()
+        Assertions.assertEquals(expectedFilm, filmService.getInMemoryFilmStorage().create(Film.builder()
                 .id(1)
                 .name("Еще один фильм")
                 .description("С добавлением этого фильма должно быть все ок.")
@@ -96,7 +97,7 @@ class FilmorateValidatorTests {
     @Test
     void validateUserMustThrowExceptionWhenEmailIsNull() {//проверка условия 1.1 - пустой email
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () ->
-                userService.create(User.builder()
+                userService.getInMemoryUserStorage().create(User.builder()
                         .id(1)
                         .email("")
                         .login("vasiliy1424")
@@ -109,7 +110,7 @@ class FilmorateValidatorTests {
     @Test
     void validateUserMustThrowExceptionWhenEmailWithoutAt() { //проверка условия 1.2 - email не содержит @
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () ->
-                userService.create(User.builder()
+                userService.getInMemoryUserStorage().create(User.builder()
                         .id(1)
                         .email("example.ru")
                         .login("petrivanovich1980")
@@ -122,7 +123,7 @@ class FilmorateValidatorTests {
     @Test
     void validateUserMustThrowExceptionWhenLoginIsNull() { //проверка условия 3 - пустой логин
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () ->
-                userService.create(User.builder()
+                userService.getInMemoryUserStorage().create(User.builder()
                         .id(1)
                         .email("elena.abramova93@example.ru")
                         .login("")
@@ -135,7 +136,7 @@ class FilmorateValidatorTests {
     @Test
     void validateUserMustThrowExceptionWhenBirthdayIsInTheFuture() { //проверка условия 4 - дата рождения в будущем
         RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () ->
-                userService.create(User.builder()
+                userService.getInMemoryUserStorage().create(User.builder()
                         .id(1)
                         .email("sweetykitty@example.ru")
                         .login("angela_wow")
@@ -147,14 +148,14 @@ class FilmorateValidatorTests {
 
     @Test
     void validateUserShouldReplaceNameForLoginWhenNameIsNull() { //проверка условия 5 - если имя пустое, вместо него устанавливается логин
-        User user = userService.create(User.builder()
+        ResponseEntity<User> user = userService.getInMemoryUserStorage().create(User.builder()
                 .id(20)
                 .email("bednyi@deneg.net")
                 .login("thunder08")
                 .name("")
                 .birthday(LocalDate.of(2001, 3, 19))
                 .build());
-        Assertions.assertEquals(user.getName(), user.getLogin());
+        Assertions.assertEquals(userService.getInMemoryUserStorage().getUsers().get(20).getName(), userService.getInMemoryUserStorage().getUsers().get(20).getLogin());
     }
 
     @Test
@@ -166,7 +167,7 @@ class FilmorateValidatorTests {
                 .name("Антон")
                 .birthday(LocalDate.of(1989, 8, 11))
                 .build();
-        Assertions.assertEquals(expectedUser, userService.create(User.builder()
+        Assertions.assertEquals(expectedUser, userService.getInMemoryUserStorage().create(User.builder()
                 .id(345)
                 .email("lightning@example.ru")
                 .login("lightning")
