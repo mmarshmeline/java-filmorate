@@ -14,19 +14,22 @@ public class FilmorateValidator {
 
     public static void validateFilm(Film film) {
         String validateErrorMessage;
-        if (film.getName().isBlank()) {
+        if (film.getName() == null || film.getName().isBlank()) {
             validateErrorMessage = "Название фильма не может быть пустым";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
-        } else if (film.getDescription().length() > maxFilmDescriptionLength) {
+        }
+        if (film.getDescription().length() > maxFilmDescriptionLength) {
             validateErrorMessage = "Максимальная длина описания фильма - 200 символов";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
-        } else if (film.getReleaseDate().isBefore(minReleaseDate)) {
+        }
+        if (film.getReleaseDate().isBefore(minReleaseDate)) {
             validateErrorMessage = "Дата релиза не может быть раньше 28 декабря 1895 года.";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
-        } else if (film.getDuration() < 0) {
+        }
+        if (film.getDuration() < 0) {
             validateErrorMessage = "Продолжительность фильма должна быть положительной.";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
@@ -40,15 +43,18 @@ public class FilmorateValidator {
             validateErrorMessage = "Электронная почта не может быть пустой и должна содержать символ @.";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
-        } else if (user.getLogin().isBlank()) {
+        }
+        if (user.getLogin().isBlank()) {
             validateErrorMessage = "Логин не может быть пустым и не может содержать пробелы.";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
-        } else if (user.getBirthday().isAfter(LocalDate.now())) {
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
             validateErrorMessage = "Дата рождения не может быть в будущем.";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
-        } else if (user.getName() == null || user.getName().isBlank()) {
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
     }

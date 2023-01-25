@@ -1,48 +1,78 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.EntityAlreadyExistException;
 import ru.yandex.practicum.filmorate.exceptions.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validation.FilmorateValidator;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
 @Slf4j
 public class UserService {
-    private final HashMap<Integer, User> users = new HashMap<>();
-    private int generatorUserId;
 
-    public User create (User user) {
-        FilmorateValidator.validateUser(user);
-        if (users.containsKey(user.getId())) {
-            String warnMessage = "Этот пользователь уже был добавлен ранее.";
-            log.warn(warnMessage);
-            throw new EntityAlreadyExistException(warnMessage);
-        }
+    @Getter
+    private final UserStorage inMemoryUserStorage;
 
-        user.setId(++generatorUserId);
-        users.put(generatorUserId, user);
-        log.info("Добавлен пользователь {}", user.getLogin());
-        return user;
+    @Autowired
+    public UserService(UserStorage inMemoryUserStorage) {
+        this.inMemoryUserStorage = inMemoryUserStorage;
     }
 
-    public boolean update (User user) {
-        FilmorateValidator.validateUser(user);
-        if (!users.containsKey(user.getId())) {
-            String warnMessage = "Такого пользователя нет в приложении.";
-            log.warn(warnMessage);
-            throw new EntityNotExistException(warnMessage);
+    public ResponseEntity<User> addToFriends(int id, int friendId) {
+        if (inMemoryUserStorage.getUsers().containsKey(id) && inMemoryUserStorage.getUsers().containsKey(friendId)) {
+            //надо ли реагировать, если такой друг уже есть в друзьях
+            inMemoryUserStorage.getUsers().get(id).getFriends().add(friendId);
+            inMemoryUserStorage.getUsers().get(friendId).getFriends().add(id);
+            return new ResponseEntity<>(inMemoryUserStorage.getUsers().get(friendId), HttpStatus.valueOf(200));
+        } else {
+            throw new EntityNotExistException("Такого пользователя нет в приложении.");
         }
-        users.put(user.getId(), user);
-        return true;
     }
 
-    public List<User> readAll() {
-        return new ArrayList<>(users.values());
+    public ResponseEntity<?> deleteFromFriends(int id, int friendId) {
+        if (inMemoryUserStorage.getUsers().containsKey(id) && inMemoryUserStorage.getUsers().containsKey(friendId)) {
+            //надо ли реагировать, если такой друг уже есть в друзьях
+            inMemoryUserStorage.getUsers().get(id).getFriends().remove(friendId);
+            inMemoryUserStorage.getUsers().get(friendId).getFriends().remove(id);
+            return new ResponseEntity<>("Дружба завершена.", HttpStatus.valueOf(200));
+        } else {
+            throw new EntityNotExistException("Такого пользователя нет в приложении.");
+        }
+    }
+
+    public ResponseEntity<List<User>> readFriendsList(int id) {
+        if (inMemoryUserStorage.getUsers().containsKey(id)) {
+            List<User> friendsList = new ArrayList<>();
+            for (Integer element : inMemoryUserStorage.getUsers().get(id).getFriends()) {
+                if (inMemoryUserStorage.getUsers().containsKey(element)) {
+                    User friend = inMemoryUserStorage.getUsers().get(element);
+                    friendsList.add(friend);
+                }
+            }
+            return new ResponseEntity<>(friendsList, HttpStatus.valueOf(200));
+        } else {
+            throw new EntityNotExistException("Такого пользователя нет в приложении.");
+        }
+    }
+
+    public ResponseEntity<List<User>> readMutualFriendsList(int id, int otherId) {
+        List<User> mutualFriendsList = new ArrayList<>();
+        if (inMemoryUserStorage.getUsers().containsKey(id) && inMemoryUserStorage.getUsers().containsKey(otherId)) {
+            for (Integer element : inMemoryUserStorage.getUsers().get(id).getFriends()) {
+                if (inMemoryUserStorage.getUsers().get(otherId).getFriends().contains(element)) {
+                    mutualFriendsList.add(inMemoryUserStorage.getUsers().get(element));
+                }
+            }
+            return new ResponseEntity<>(mutualFriendsList, HttpStatus.valueOf(200));
+        } else {
+            throw new EntityNotExistException("Такого пользователя нет в приложении.");
+        }
     }
 }

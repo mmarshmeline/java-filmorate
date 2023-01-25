@@ -1,50 +1,54 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.EntityAlreadyExistException;
 import ru.yandex.practicum.filmorate.exceptions.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.validation.FilmorateValidator;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class FilmService {
-    private final HashMap<Integer, Film> films = new HashMap<>();
-    private int generatorFilmId;
+    @Getter
+    private final FilmStorage inMemoryFilmStorage;
 
-    public Film create(Film film) {
-        FilmorateValidator.validateFilm(film);
-
-        if (films.containsKey(film.getId())) {
-            String warnMessage = "Этот фильм был добавлен ранее.";
-            log.warn(warnMessage);
-            throw new EntityAlreadyExistException(warnMessage);
-        }
-        film.setId(++generatorFilmId);
-        films.put(generatorFilmId, film);
-        log.info("Добавлен новый фильм: {}", film.getName());
-        return film;
+    @Autowired
+    public FilmService(FilmStorage inMemoryFilmStorage) {
+        this.inMemoryFilmStorage = inMemoryFilmStorage;
     }
 
-    public boolean update(Film film) {
-        FilmorateValidator.validateFilm(film);
-
-        if (!films.containsKey(film.getId())) {
-            String warnMessage = "Такого фильма нет в приложении.";
-            log.warn(warnMessage);
-            throw new EntityNotExistException(warnMessage);
+    public ResponseEntity<?> addLikeToFilm (int filmId, int userId) {
+        if (inMemoryFilmStorage.getFilms().containsKey(filmId)) { //нужно ли проверять наличие в программе пользователя
+            return new ResponseEntity<>(inMemoryFilmStorage.getFilms().get(filmId).getLikes().add(userId), HttpStatus.valueOf(200));
+        } else {
+            throw new EntityNotExistException("Такого фильма нет в приложении.");
         }
-
-        films.put(film.getId(), film);
-        return true;
     }
 
-    public List<Film> readAll () {
-        return new ArrayList<>(films.values());
+    public ResponseEntity<?> deleteLikeFromFilm (int filmId, int userId) {
+        if (filmId < 0 || userId < 0) {
+            throw new EntityNotExistException("Неправильный id фильма или пользователя");
+        }
+        if (inMemoryFilmStorage.getFilms().containsKey(filmId)) {
+            return new ResponseEntity<>(inMemoryFilmStorage.getFilms().get(filmId).getLikes().remove(userId), HttpStatus.valueOf(200));
+        } else {
+            throw new EntityNotExistException("Такого фильма нет в приложении.");
+        }
+    }
+
+    public ResponseEntity<List<Film>> readMostLikedFilmsList (int count) {
+        List<Film> mostLikedFilmsList = new ArrayList<>(inMemoryFilmStorage.getFilms().values());
+        Collections.sort(mostLikedFilmsList);
+        mostLikedFilmsList = mostLikedFilmsList.stream().limit(count).collect(Collectors.toList());
+        return new ResponseEntity<>(mostLikedFilmsList, HttpStatus.valueOf(200));
     }
 }
