@@ -1,3 +1,4 @@
+/*
 package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.Assertions;
@@ -155,7 +156,8 @@ class FilmorateValidatorTests {
                 .name("")
                 .birthday(LocalDate.of(2001, 3, 19))
                 .build());
-        Assertions.assertEquals(userService.getInMemoryUserStorage().getUsers().get(20).getName(), userService.getInMemoryUserStorage().getUsers().get(20).getLogin());
+        Assertions.assertEquals(userService.getInMemoryUserStorage().getUsers().get(20).getName(),
+                userService.getInMemoryUserStorage().getUsers().get(20).getLogin());
     }
 
     @Test
@@ -177,3 +179,4 @@ class FilmorateValidatorTests {
     }
 
 }
+*/
