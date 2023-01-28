@@ -24,24 +24,24 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<Film> create(@RequestBody Film film) { // внесение фильма в базу приложения
-        filmService.getInMemoryFilmStorage().create(film);
+        filmService.create(film);
         return new ResponseEntity<>(film, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<Film> update(@RequestBody Film film) { // обновление данных по уже внесенному в базу приложения фильму
-        filmService.getInMemoryFilmStorage().update(film);
+        filmService.update(film);
         return new ResponseEntity<>(film, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<List<Film>> readAll() { // получение списка всех фильмов, ранее внесенных в базу приложения
-        return filmService.getInMemoryFilmStorage().readAll();
+        return filmService.readAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> read(@PathVariable int id) {
-        return filmService.getInMemoryFilmStorage().read(id);
+        return filmService.read(id);
     }
 
     @PutMapping("/{id}/like/{userId}")

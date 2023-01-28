@@ -24,24 +24,24 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> create(@RequestBody User user) { // внесение пользователя в базу приложения
-        userService.getInMemoryUserStorage().create(user);
+        userService.create(user);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
     @PutMapping
     public ResponseEntity<User> update(@RequestBody User user) {
-        userService.getInMemoryUserStorage().update(user);
+        userService.update(user);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<List<User>> readAll() {
-        return userService.getInMemoryUserStorage().readAll();
+        return userService.readAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> read(@PathVariable int id) {
-        return userService.getInMemoryUserStorage().read(id);
+        return userService.read(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

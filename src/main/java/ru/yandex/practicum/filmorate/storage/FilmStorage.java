@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.HashMap;
 import java.util.List;
 
 public interface FilmStorage {
@@ -18,6 +17,10 @@ public interface FilmStorage {
 
     ResponseEntity<?> delete(int id);
 
-    HashMap<Integer, Film> getFilms();
+    ResponseEntity<?> addLikeToFilm(int filmId, int userId);
+
+    ResponseEntity<?> deleteLikeFromFilm(int filmId, int userId);
+
+    ResponseEntity<List<Film>> readMostLikedFilmsList(int count);
 
 }

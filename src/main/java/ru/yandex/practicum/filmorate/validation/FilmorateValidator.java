@@ -9,8 +9,8 @@ import java.time.LocalDate;
 
 @Slf4j
 public class FilmorateValidator {
-    private static final int maxFilmDescriptionLength = 200;
-    private static final LocalDate minReleaseDate = LocalDate.of(1895, 12, 28);
+    private static final int MAX_FILM_DESCRIPTION_LENGTH = 200;
+    private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
     public static void validateFilm(Film film) {
         String validateErrorMessage;
@@ -19,12 +19,12 @@ public class FilmorateValidator {
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
         }
-        if (film.getDescription().length() > maxFilmDescriptionLength) {
+        if (film.getDescription().length() > MAX_FILM_DESCRIPTION_LENGTH) {
             validateErrorMessage = "Максимальная длина описания фильма - 200 символов";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
         }
-        if (film.getReleaseDate().isBefore(minReleaseDate)) {
+        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
             validateErrorMessage = "Дата релиза не может быть раньше 28 декабря 1895 года.";
             log.warn(validateErrorMessage);
             throw new EntityHasIncorrectFieldsException(validateErrorMessage);
