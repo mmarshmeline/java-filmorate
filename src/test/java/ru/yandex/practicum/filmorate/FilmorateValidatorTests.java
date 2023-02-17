@@ -4,10 +4,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.validation.FilmorateValidator;
 
 import java.time.LocalDate;
 
@@ -77,13 +80,13 @@ class FilmorateValidatorTests {
 
     @Test
     void validateFilmShouldBeCompletedSuccessfullyWhenFilmIsOk() { //проверка валидации, если объект Film соответствует всем условиям
-        Film expectedFilm = Film.builder()
+        ResponseEntity<Film> expectedFilm = new ResponseEntity<>(Film.builder()
                 .id(1)
                 .name("Еще один фильм")
                 .description("С добавлением этого фильма должно быть все ок.")
                 .releaseDate(LocalDate.of(2022, 10, 3))
                 .duration(211)
-                .build();
+                .build(), HttpStatus.valueOf(201));
         Assertions.assertEquals(expectedFilm, filmService.create(Film.builder()
                 .id(1)
                 .name("Еще один фильм")
@@ -147,25 +150,26 @@ class FilmorateValidatorTests {
 
     @Test
     void validateUserShouldReplaceNameForLoginWhenNameIsNull() { //проверка условия 5 - если имя пустое, вместо него устанавливается логин
-        User user = userService.create(User.builder()
+        User user = User.builder()
                 .id(20)
                 .email("bednyi@deneg.net")
                 .login("thunder08")
                 .name("")
                 .birthday(LocalDate.of(2001, 3, 19))
-                .build());
-        Assertions.assertEquals(user.getName(), user.getLogin());
+                .build();
+        FilmorateValidator.validateUser(user);
+            Assertions.assertEquals(user.getName(), user.getLogin());
     }
 
     @Test
     void validateUserShouldBeCompletedSuccessfullyWhenUserIsOk() { //проверка валидации если объект User соответствует всем условиям
-        User expectedUser = User.builder()
+        ResponseEntity<User> expectedUser = new ResponseEntity<>(User.builder()
                 .id(1)
                 .email("lightning@example.ru")
                 .login("lightning")
                 .name("Антон")
                 .birthday(LocalDate.of(1989, 8, 11))
-                .build();
+                .build(), HttpStatus.valueOf(201));
         Assertions.assertEquals(expectedUser, userService.create(User.builder()
                 .id(345)
                 .email("lightning@example.ru")

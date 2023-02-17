@@ -23,31 +23,39 @@ public class FilmController {
     }
 
     @PostMapping
-    public ResponseEntity <Film> create(@RequestBody Film film) { // внесение фильма в базу приложения
-        try {
-            filmService.create(film);
-            return new ResponseEntity<>(film, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(film, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Film> create(@RequestBody Film film) { // внесение фильма в базу приложения
+        filmService.create(film);
+        return new ResponseEntity<>(film, HttpStatus.CREATED);
     }
 
     @PutMapping
-    public ResponseEntity <Film> update(@RequestBody Film film) { // обновление данных по уже внесенному в базу приложения фильму
-        try {
-            filmService.update(film);
-            return new ResponseEntity<>(film, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(film, HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Film> update(@RequestBody Film film) { // обновление данных по уже внесенному в базу приложения фильму
+        filmService.update(film);
+        return new ResponseEntity<>(film, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<List<Film>> readAll () { // получение списка всех фильмов, ранее внесенных в базу приложения
-        try {
-            return new ResponseEntity<>(filmService.readAll(), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<List<Film>> readAll() { // получение списка всех фильмов, ранее внесенных в базу приложения
+        return filmService.readAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Film> read(@PathVariable int id) {
+        return filmService.read(id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public ResponseEntity<?> addLikeToFilm(@PathVariable(value = "id") int filmId, @PathVariable int userId) {
+        return filmService.addLikeToFilm(filmId, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public ResponseEntity<?> deleteLikeFromFilm(@PathVariable(value = "id") int filmId, @PathVariable int userId) {
+        return filmService.deleteLikeFromFilm(filmId, userId);
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<?> readMostLikedFilmsList(@RequestParam(defaultValue = "10", required = false) int count) {
+        return filmService.readMostLikedFilmsList(count);
     }
 }

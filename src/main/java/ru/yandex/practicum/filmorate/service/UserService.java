@@ -1,48 +1,73 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.EntityAlreadyExistException;
-import ru.yandex.practicum.filmorate.exceptions.EntityNotExistException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validation.FilmorateValidator;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Service
 @Slf4j
 public class UserService {
-    private final HashMap<Integer, User> users = new HashMap<>();
-    private int generatorUserId;
+    private final UserStorage inMemoryUserStorage;
 
-    public User create (User user) {
-        FilmorateValidator.validateUser(user);
-        if (users.containsKey(user.getId())) {
-            String warnMessage = "Этот пользователь уже был добавлен ранее.";
-            log.warn(warnMessage);
-            throw new EntityAlreadyExistException(warnMessage);
-        }
+    @Autowired
+    public UserService(UserStorage inMemoryUserStorage) {
+        this.inMemoryUserStorage = inMemoryUserStorage;
+    }
 
-        user.setId(++generatorUserId);
-        users.put(generatorUserId, user);
+    public ResponseEntity<User> addToFriends(int id, int friendId) {
+        ResponseEntity<User> response = inMemoryUserStorage.addToFriends(id, friendId);
+        log.info("Пользователи с id " + id + " и id " + friendId + " теперь друзья.");
+        return response;
+    }
+
+    public ResponseEntity<?> deleteFromFriends(int id, int friendId) {
+        ResponseEntity<?> response = inMemoryUserStorage.deleteFromFriends(id, friendId);
+        log.info("Пользователи с id " + id + " и id " + friendId + " больше не друзья.");
+        return response;
+    }
+
+    public ResponseEntity<List<User>> readFriendsList(int id) {
+        ResponseEntity<List<User>> response = inMemoryUserStorage.readFriendsList(id);
+        log.info("Возвращен список друзей пользователя с id " + id + ".");
+        return response;
+    }
+
+    public ResponseEntity<List<User>> readMutualFriendsList(int id, int otherId) {
+        ResponseEntity<List<User>> response = inMemoryUserStorage.readMutualFriendsList(id, otherId);
+        log.info("Возвращен список общих друзей у пользователей с id " + id + " и id " + otherId + ".");
+        return response;
+    }
+
+    public ResponseEntity<User> create(User user) {
+        ResponseEntity<User> response = inMemoryUserStorage.create(user);
         log.info("Добавлен пользователь {}", user.getLogin());
-        return user;
+        return response;
     }
 
-    public boolean update (User user) {
-        FilmorateValidator.validateUser(user);
-        if (!users.containsKey(user.getId())) {
-            String warnMessage = "Такого пользователя нет в приложении.";
-            log.warn(warnMessage);
-            throw new EntityNotExistException(warnMessage);
-        }
-        users.put(user.getId(), user);
-        return true;
+    public ResponseEntity<User> update(User user) {
+        ResponseEntity<User> response = inMemoryUserStorage.update(user);
+        log.info("Обновлена информация о пользователе {}", user.getLogin());
+        return response;
     }
 
-    public List<User> readAll() {
-        return new ArrayList<>(users.values());
+    public ResponseEntity<List<User>> readAll() {
+        ResponseEntity<List<User>> response = inMemoryUserStorage.readAll();
+        log.info("Возвращен список всех пользователей в приложении.");
+        return response;
+    }
+
+    public ResponseEntity<User> read(int id) {
+        ResponseEntity<User> response = inMemoryUserStorage.read(id);
+        log.info("Возвращен пользователь с id: {}", id);
+        return response;
+    }
+
+    public UserStorage getInMemoryUserStorage() {
+        return inMemoryUserStorage;
     }
 }

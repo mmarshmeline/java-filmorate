@@ -16,6 +16,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
@@ -23,30 +24,43 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> create(@RequestBody User user) { // внесение пользователя в базу приложения
-        try {
-            userService.create(user);
-            return new ResponseEntity<>(user, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(user, HttpStatus.BAD_REQUEST);
-        }
+        userService.create(user);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
     @PutMapping
-    public ResponseEntity <User> update(@RequestBody User user) {
-        try {
-            userService.update(user);
-            return new ResponseEntity<>(user, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<User> update(@RequestBody User user) {
+        userService.update(user);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> readAll () {
-        try {
-            return new ResponseEntity<>(userService.readAll(), HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<List<User>> readAll() {
+        return userService.readAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<User> read(@PathVariable int id) {
+        return userService.read(id);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<?> addToFriend(@PathVariable int id, @PathVariable int friendId) { //добавление в друзья
+        return userService.addToFriends(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<?> deleteFromFriends(@PathVariable int id, @PathVariable int friendId) { // удаление из друзей
+        return userService.deleteFromFriends(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public ResponseEntity<?> readFriendsList(@PathVariable int id) { //возвращаем список пользователей, являющихся его друзьями
+        return userService.readFriendsList(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public ResponseEntity<?> readMutualFriendsList(@PathVariable int id, @PathVariable int otherId) { //возвращаем список друзей, общих с др.пользователем
+        return userService.readMutualFriendsList(id, otherId);
     }
 }
