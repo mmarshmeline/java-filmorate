@@ -2,72 +2,98 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
 
 @Service
 @Slf4j
 public class UserService {
-    private final UserStorage inMemoryUserStorage;
+    private final UserStorage users;
 
     @Autowired
-    public UserService(UserStorage inMemoryUserStorage) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
+    public UserService(@Qualifier("UserDbStorage") UserStorage users) {
+        this.users = users;
     }
 
-    public ResponseEntity<User> addToFriends(int id, int friendId) {
-        ResponseEntity<User> response = inMemoryUserStorage.addToFriends(id, friendId);
-        log.info("Пользователи с id " + id + " и id " + friendId + " теперь друзья.");
-        return response;
+    public User addUser(User user) throws ResponseStatusException {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            log.debug("Имя пользователя пустое. Был использован логин");
+        }
+        users.add(user);
+        log.info("Пользователь {} сохранен", user);
+        return user;
     }
 
-    public ResponseEntity<?> deleteFromFriends(int id, int friendId) {
-        ResponseEntity<?> response = inMemoryUserStorage.deleteFromFriends(id, friendId);
-        log.info("Пользователи с id " + id + " и id " + friendId + " больше не друзья.");
-        return response;
+    public User updateUser(User user) throws ResponseStatusException {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            log.debug("Имя пользователя пустое. Был использован логин");
+        }
+        users.update(user);
+        log.info("Пользователь {} сохранен", user);
+        return user;
     }
 
-    public ResponseEntity<List<User>> readFriendsList(int id) {
-        ResponseEntity<List<User>> response = inMemoryUserStorage.readFriendsList(id);
-        log.info("Возвращен список друзей пользователя с id " + id + ".");
-        return response;
+    public List<User> getUsers() {
+        log.info("Текущее кол-во пользователей: " + users.getUsersList().size());
+        return users.getUsersList();
     }
 
-    public ResponseEntity<List<User>> readMutualFriendsList(int id, int otherId) {
-        ResponseEntity<List<User>> response = inMemoryUserStorage.readMutualFriendsList(id, otherId);
-        log.info("Возвращен список общих друзей у пользователей с id " + id + " и id " + otherId + ".");
-        return response;
+    public void addFriend(Integer userId, Integer friendId) throws ResponseStatusException {
+        if (userId <= 0 || friendId <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "id и friendId не могут быть отрицательныи либо равены 0");
+        }
+        users.addFriend(userId, friendId);
+        log.info("Пользователь с id=" + userId + " добавил в друзья пользователя с id= " + friendId);
     }
 
-    public ResponseEntity<User> create(User user) {
-        ResponseEntity<User> response = inMemoryUserStorage.create(user);
-        log.info("Добавлен пользователь {}", user.getLogin());
-        return response;
+    public void deleteFriend(Integer userId, Integer friendId) throws ResponseStatusException {
+        if (userId <= 0 || friendId <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "id и friendId не могут быть отрицательныи либо равены 0");
+        }
+        if (userId.equals(friendId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Невозможно удалить из друзей самого себя");
+        }
+        users.deleteFriend(userId, friendId);
+        log.info("Пользователь с id=" + userId + " удалил пользователя с id=" + friendId);
     }
 
-    public ResponseEntity<User> update(User user) {
-        ResponseEntity<User> response = inMemoryUserStorage.update(user);
-        log.info("Обновлена информация о пользователе {}", user.getLogin());
-        return response;
+    public List<User> getCommonFriends(Integer userId, Integer friendId) throws ResponseStatusException {
+        if (userId <= 0 || friendId <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "id и friendId не могут быть отрицательныи либо равены 0");
+        }
+        if (userId.equals(friendId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Невозможно запросить общих друзей самого себя");
+        }
+        return users.getCommonFriends(userId, friendId);
     }
 
-    public ResponseEntity<List<User>> readAll() {
-        ResponseEntity<List<User>> response = inMemoryUserStorage.readAll();
-        log.info("Возвращен список всех пользователей в приложении.");
-        return response;
+    public List<User> getFriends(Integer friendId) throws ResponseStatusException {
+
+        if (friendId <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "id не может быть отрицательным либо равен 0");
+        }
+
+        return users.getFriends(friendId);
     }
 
-    public ResponseEntity<User> read(int id) {
-        ResponseEntity<User> response = inMemoryUserStorage.read(id);
-        log.info("Возвращен пользователь с id: {}", id);
-        return response;
-    }
-
-    public UserStorage getInMemoryUserStorage() {
-        return inMemoryUserStorage;
+    public User getUser(Integer userId) {
+        if (userId <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "id не может быть отрицательным либо равен 0");
+        }
+        return users.getUser(userId);
     }
 }

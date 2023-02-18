@@ -1,61 +1,56 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/films")
-@Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FilmController {
-
     private final FilmService filmService;
 
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
-
     @PostMapping
-    public ResponseEntity<Film> create(@RequestBody Film film) { // внесение фильма в базу приложения
-        filmService.create(film);
-        return new ResponseEntity<>(film, HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film addFilm(@Valid @RequestBody Film film) {
+        return filmService.addFilm(film);
     }
 
     @PutMapping
-    public ResponseEntity<Film> update(@RequestBody Film film) { // обновление данных по уже внесенному в базу приложения фильму
-        filmService.update(film);
-        return new ResponseEntity<>(film, HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public Film updateFilm(@Valid @RequestBody Film film) {
+        return filmService.updateFilm(film);
     }
 
     @GetMapping
-    public ResponseEntity<List<Film>> readAll() { // получение списка всех фильмов, ранее внесенных в базу приложения
-        return filmService.readAll();
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getFilms() {
+        return filmService.getFilms();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Film> read(@PathVariable int id) {
-        return filmService.read(id);
+    @PutMapping("{id}/like/{userId}")
+    public void addLike(@PathVariable Integer userId, @PathVariable("id") Integer filmId) {
+        filmService.addLike(userId, filmId);
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<?> addLikeToFilm(@PathVariable(value = "id") int filmId, @PathVariable int userId) {
-        return filmService.addLikeToFilm(filmId, userId);
+    @GetMapping("{id}")
+    public Film getFilm(@PathVariable("id") Integer filmId) {
+        return filmService.getFilm(filmId);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<?> deleteLikeFromFilm(@PathVariable(value = "id") int filmId, @PathVariable int userId) {
-        return filmService.deleteLikeFromFilm(filmId, userId);
+    @DeleteMapping("{id}/like/{userId}")
+    public void deleteLike(@PathVariable Integer userId, @PathVariable("id") Integer filmId) {
+        filmService.deleteLike(userId, filmId);
     }
 
-    @GetMapping("/popular")
-    public ResponseEntity<?> readMostLikedFilmsList(@RequestParam(defaultValue = "10", required = false) int count) {
-        return filmService.readMostLikedFilmsList(count);
+    @GetMapping("popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") Integer count) {
+        return filmService.getSortedFilms(count);
     }
 }
