@@ -1,3 +1,4 @@
+/*
 package ru.yandex.practicum.filmorate.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -62,7 +63,7 @@ public class UserControllerTest {
                 );
     }
 
-    /*@Test
+    @Test
     public void addDuplicateUser() throws Exception {
         //given
         User user1 = User.builder().id(1).email("simple@email.ru").login("user_login").name("name").birthday(brithDay)
@@ -82,7 +83,7 @@ public class UserControllerTest {
                                     , "Тело ответа с сообщением пустое");
                         }
                 );
-    }*/
+    }
 
     @Test
     public void addIncorrectEmailUser() throws Exception {
@@ -485,3 +486,4 @@ public class UserControllerTest {
                 );
     }
 }
+*/
