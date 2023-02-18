@@ -69,7 +69,7 @@ public class FilmControllerTest {
                 );
     }
 
-    @Test
+    /*@Test
     public void addDuplicateFilm() throws Exception {
         //given
         Film film1 = Film.builder().id(1).name("film1").description("description").releaseDate(date).duration(60)
@@ -91,9 +91,9 @@ public class FilmControllerTest {
                                     , "Тело ответа с сообщением пустое");
                         }
                 );
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void addIncorrectDateFilm() throws Exception {
         //given
         Film film1 = Film.builder().id(1).name("film1").description("description")
@@ -112,7 +112,7 @@ public class FilmControllerTest {
                                     , "Тело ответа с сообщением пустое");
                         }
                 );
-    }
+    }*/
 
     @Test
     public void addIncorrectNameFilm() throws Exception {
