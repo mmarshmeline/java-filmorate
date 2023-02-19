@@ -2,68 +2,94 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class FilmService {
-    private final FilmStorage inMemoryFilmStorage;
+    private final FilmStorage films;
+    private final static LocalDate minDate = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(FilmStorage inMemoryFilmStorage) {
-        this.inMemoryFilmStorage = inMemoryFilmStorage;
+
+    public FilmService(@Qualifier("FilmDbStorage") FilmStorage films) {
+        this.films = films;
     }
 
-    public ResponseEntity<?> addLikeToFilm(int filmId, int userId) {
-        ResponseEntity<?> result = inMemoryFilmStorage.addLikeToFilm(filmId, userId);
-        log.info("Пользователем с id " + userId + " поставлен лайк фильму с id " + filmId);
-        return result;
+    public Film addFilm(Film film) throws ResponseStatusException {
+        if (film.getReleaseDate().isBefore(minDate)) {
+            log.warn("Дата релиза не может быть раньше 28.12.1895\nТекущая дата релиза: " + film.getReleaseDate());
+            throw new ValidationException("Дата релиза не может быть раньше 28.12.1895");
+        }
+        films.add(film);
+        log.info("Фильм {} сохранен", film);
+        return film;
     }
 
-    public ResponseEntity<?> deleteLikeFromFilm(int filmId, int userId) {
-        ResponseEntity<?> result = inMemoryFilmStorage.deleteLikeFromFilm(filmId, userId);
-        log.info("Пользователем с id " + userId + " снят лайк с фильма с id " + filmId);
-        return result;
+    public Film updateFilm(Film film) throws ResponseStatusException {
+        if (film.getReleaseDate().isBefore(minDate)) {
+            log.warn("Дата релиза не может быть раньше 28.12.1895\nТекущая дата релиза: " + film.getReleaseDate());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Дата релиза не может быть раньше 28.12.1895");
+        }
+        log.info("Фильм {} обновлен", film);
+        return films.update(film);
     }
 
-    public ResponseEntity<List<Film>> readMostLikedFilmsList(int count) {
-        ResponseEntity<List<Film>> result = inMemoryFilmStorage.readMostLikedFilmsList(count);
-        log.info("Топ-" + count + " фильмов");
-        return result;
+    public List<Film> getFilms() {
+        log.info("Текущее кол-во фильмов: " + films.getFilmsList().size());
+        return films.getFilmsList();
     }
 
-    public ResponseEntity<Film> create(Film film) {
-        ResponseEntity<Film> result = inMemoryFilmStorage.create(film);
-        log.info("Добавлен новый фильм: {}", film.getName());
-        return result;
+    public void addLike(Integer userId, Integer filmId) throws ResponseStatusException {
+        if (userId <= 0 || filmId <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "id и filmId не могут быть отрицательныи либо равены 0");
+        }
+        films.addLike(userId, filmId);
+        log.info("Пользователь c id = " + userId + " поставил лайк фильму c id = " + filmId);
     }
 
-    public ResponseEntity<Film> update(Film film) {
-        ResponseEntity<Film> result = inMemoryFilmStorage.update(film);
-        log.info("Обновлены данные о фильме: {}", film.getName());
-        return result;
+    public void deleteLike(Integer userId, Integer filmId) throws ResponseStatusException {
+        if (userId <= 0 || filmId <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "id и filmId не могут быть отрицательныи либо равены 0");
+        }
+        films.deleteLike(userId, filmId);
+        log.info("Пользователь c id=" + userId + " удалил лайк с фильма id= " + filmId);
     }
 
-    public ResponseEntity<List<Film>> readAll() {
-        ResponseEntity<List<Film>> result = inMemoryFilmStorage.readAll();
-        log.info("Возвращен список всех фильмов приложения.");
-        return result;
+    public List<Film> getSortedFilms(Integer count) throws ResponseStatusException {
+        if (count <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "count не может быть отрицательным либо равен 0");
+        }
+        Comparator<Film> sortFilm = (f1, f2) -> {
+            Integer filmLikes1 = f1.getLikes().size();
+            Integer filmLikes2 = f2.getLikes().size();
+            return -1 * filmLikes1.compareTo(filmLikes2);
+
+        };
+        return films.getFilmsList().stream().sorted(sortFilm).limit(count)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public ResponseEntity<Film> read(int id) {
-        ResponseEntity<Film> result = inMemoryFilmStorage.read(id);
-        log.info("Возвращен фильм с id: {}", id);
-        return result;
-    }
-
-    public ResponseEntity<?> delete(int id) {
-        ResponseEntity<?> result = inMemoryFilmStorage.delete(id);
-        log.info("Удален фильм с id: {}", id);
-        return result;
+    public Film getFilm(Integer filmId) {
+        if (filmId <= 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "id не может быть отрицательным либо равен 0");
+        }
+        return films.getFilm(filmId);
     }
 }
