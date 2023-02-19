@@ -9,7 +9,7 @@ import java.util.*;
 @Data
 @Builder
 public class User {
-    @EqualsAndHashCode.Exclude
+
     private Integer id;
     @Email(message = "некорректный email")
     private String email;

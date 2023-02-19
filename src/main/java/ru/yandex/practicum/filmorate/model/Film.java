@@ -13,7 +13,7 @@ import java.util.*;
 @Data
 @Builder
 public class Film {
-    @EqualsAndHashCode.Exclude
+
     private Integer id;
     @NotBlank(message = "Название не может быть пустым")
     private String name;

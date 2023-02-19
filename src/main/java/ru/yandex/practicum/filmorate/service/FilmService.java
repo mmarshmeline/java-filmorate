@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FilmService {
     private final FilmStorage films;
-    private final LocalDate minDate = LocalDate.of(1895, 12, 28);
+    private final static LocalDate minDate = LocalDate.of(1895, 12, 28);
 
     @Autowired
 

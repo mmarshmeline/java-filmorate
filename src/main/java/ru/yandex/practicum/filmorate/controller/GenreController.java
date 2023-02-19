@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/genres")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class GenreController {
     private final GenreService genreService;
 

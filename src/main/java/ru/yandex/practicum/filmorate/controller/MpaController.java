@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/mpa")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class MpaController {
     private final MpaService mpaService;
 
